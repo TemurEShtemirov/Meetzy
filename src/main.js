@@ -11,6 +11,19 @@ class MyTelegramBot extends HtmlTelegramBot {
         const text = this.loadMessage("main");
         await this.sendImage("main");
         await this.sendText(text);
+
+        // add menu
+
+        this.showMainMenu({
+            "start":"Start the bot",
+            "gpt":"Let's talk with AI",
+            "app":"Demonstrate App",
+            "account":"Generate ur Tinder account",
+            "message":"Correspondence on your behalf",
+            "date":"Correspondence with stars",
+            "opener":"Message for acquaintance",
+        })
+
     }
 
     async html(msg) {
@@ -21,7 +34,9 @@ class MyTelegramBot extends HtmlTelegramBot {
 
     async gpt(msg) {
         this.mode = "gpt"
-        await this.sendText("Les talk with AI")
+        const text = this.loadMessage("gpt")
+        await  this.sendImage("gpt")
+        await this.sendText(text)
     }
 
     async gptDialog(msg) {
@@ -37,7 +52,7 @@ class MyTelegramBot extends HtmlTelegramBot {
         else {
 
             const text = msg.text;
-            await this.sendText("<b>Hey<b/>");
+            await this.sendText("<b>Hey</b>>");
             await this.sendText("<i>How's it going</i>");
             await this.sendText(text);
 
@@ -60,7 +75,7 @@ class MyTelegramBot extends HtmlTelegramBot {
 const chatgpt = new ChatGptService("gpt:60Et7Jza9bA4ePGiBCDOJFkblB3TLxR3EqTzYJuFUFITcRHp")
 const bot = new MyTelegramBot("7031452318:AAFQPmIQ5qHj5SBsFhYIsJg6g38U_46A3TA");
 bot.onCommand(/\/start/, bot.start.bind(bot)); // start the bot
-bot.onCommand(/\/html/, bot.html.bind(bot)); //html
+bot.onCommand(/\/app/, bot.html.bind(bot)); // demonstrate the app
 bot.onCommand(/\/gpt/, bot.gpt.bind(bot)); //gpt
 bot.onTextMessage(bot.hello.bind(bot));
 bot.onButtonCallback(/^.*/, bot.helloButton.bind(bot));
