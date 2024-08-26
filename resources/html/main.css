@@ -1,11 +1,15 @@
 /* Основной стиль текста, используемый в Telegram */
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap');   /*import for font*/
+
 body {
     padding: 5px;
-    font-family: 'Roboto', 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    /*font-family: 'Roboto', 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif;*/
+    font-family: 'Lora', serif;
     font-size: 14px;
     line-height: 1.5;
     color: #000;
-    background-color: aqua;
+    /*background-color: aqua;*/
+    background-color: #FFC0CB;
 }
 
 /* Дополнительные стили для заголовков */
