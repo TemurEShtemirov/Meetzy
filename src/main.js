@@ -6,6 +6,8 @@ class MyTelegramBot extends HtmlTelegramBot {
         super(token);
         this.mode = null
         this.list = []
+        this.user = []
+        this.count = 0
     }
 
     async start(msg) {
@@ -17,19 +19,19 @@ class MyTelegramBot extends HtmlTelegramBot {
         // add menu
 
         this.showMainMenu({
-            "start": "Start the bot",
-            "gpt": "Let's talk with AI",
-            "app": "Demonstrate App",
-            "account": "Generate ur Tinder account",
-            "message": "Correspondence on your behalf",
-            "date": "Correspondence with stars",
-            "opener": "Message for acquaintance",
+            "start": "Запустить бот🤖",
+            "gpt": "Давай поговорим с ИИ",
+            "app": "Продемонстрировать приложение",
+            "account": "генерация Tinder-профиля",
+            "message": "переписка от вашего имени ",
+            "date": "переписка со звездами 🔥",
+            "opener": "сообщение для знакомства 🥰",
         })
 
     }
 
     async html(msg) {
-        await this.sendHTML("<h3 style='font-family: 'Roboto', 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif'>Hello World</h3>")
+        await this.sendHTML("<h3 style='font-family: 'Roboto', 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif'>Meetz™</h3>")
         const html = this.loadHtml("main")
         await this.sendHTML(html, {theme: "dark"})
     }
@@ -87,6 +89,7 @@ class MyTelegramBot extends HtmlTelegramBot {
             "message_next": "Следующее сообщение",
             "message_date": "Пригласить на свидание"
         })
+        this.list = [] // to empty the list
     }
 
     async messageBtn(callbackQuery) {
@@ -100,10 +103,99 @@ class MyTelegramBot extends HtmlTelegramBot {
     }
 
     async messageDialog(msg) {
-        this.list = [] // to empty the list
         const txt = msg.text;
         this.list.push(txt)
     }
+
+    async profile(msg) {
+        this.mode = "profile"
+
+        const txt = this.loadMessage("profile")
+        await this.sendImage("profile")
+        await this.sendText(txt)
+
+        this.user = {}
+        this.count = 0;
+        await this.sendText("Сколько вам лет?")
+    }
+
+
+    async profileDialog(msg) {
+        const txt = await msg.text
+        this.count++
+
+        if (this.count === 1) {
+            this.user["age"] = txt
+            await this.sendText("Кем вы работаете?")
+        }
+        if (this.count === 2) {
+            this.user["occupation"] = txt
+            await this.sendText("У вас есть хобби?")
+        }
+        if (this.count === 3) {
+            this.user["hobby"] = txt
+            await this.sendText("Что вам НЕ нравиться в людях")
+        }
+        if (this.count === 4) {
+            this.user["annoys"] = txt
+            await this.sendText("Цели знакомства?")
+        }
+        if (this.count === 5) {
+            this.user["goals"] = txt
+
+            const prompt = this.loadPrompt("profile")
+            const info = userInfoToString(this.user)
+
+            const myMsg = await this.sendText("ИИ занимается генерацией вашего профиля...") // loading
+            const answer = await chatgpt.sendQuestion(prompt, info)
+            await this.sendText(answer)
+        }
+    }
+
+    async opener(msg) {
+        this.mode = "opener"
+        const txt = this.loadMessage("opener")
+        await this.sendImage("opener")
+        await this.sendText(txt)
+
+        this.user = {}
+        this.count = 0;
+        await this.sendText("Имя девушки?")
+    }
+
+    async openerDialog(msg) {
+        const txt = await msg.text
+        this.count++
+
+        if (this.count === 1) {
+            this.user["name"] = txt
+            await this.sendText("Сколько ей лет?")
+        }
+        if (this.count === 2) {
+            this.user["age"] = txt
+            await this.sendText("Оцените её внешность? 0/10")
+        }
+        if (this.count === 3) {
+            this.user["handsome"] = txt
+            await this.sendText("Кем она работает?")
+        }
+        if (this.count === 4) {
+            this.user["occupation"] = txt
+            await this.sendText("Цель знакомства?")
+        }
+        if (this.count === 5) {
+            this.user["goals"] = txt
+
+            const prompt = this.loadPrompt("opener")
+            const info = userInfoToString(this.user)
+
+            const myMsg = await this.sendText("ИИ занимается генерацией вашего оупенера...") // loading
+            const answer = await chatgpt.sendQuestion(prompt, info)
+            await this.editText(myMsg, answer)
+        }
+
+    }
+
 
     async hello(msg) {
 
@@ -113,17 +205,21 @@ class MyTelegramBot extends HtmlTelegramBot {
             await this.dateDialog(msg)
         else if (this.mode === "message") // message mode
             await this.messageDialog(msg)
+        else if (this.mode === "profile")
+            await this.profileDialog(msg)
+        else if (this.mode === "opener")
+            await this.openerDialog(msg)
         else {
 
             const txt = msg.text;
-            await this.sendText("<b>Hey</b>>"); // bold text
-            await this.sendText("<i>How's it going</i>"); // italic text
+            await this.sendText("<b>Хэй</b>>"); // bold text
+            await this.sendText("<i>Как дела</i>"); // italic text
             await this.sendText(txt);
 
             await this.sendImage("date")
-            await this.sendTextButtons("Which theme u want", { // btn theme
-                theme_light: "Light",
-                theme_dark: "Dark",
+            await this.sendTextButtons("Какую тему вы хотите?", { // btn theme
+                theme_light: "Светлую",
+                theme_dark: "Тёмную",
             });
         }
 
@@ -132,8 +228,8 @@ class MyTelegramBot extends HtmlTelegramBot {
     async helloButton(callbackQuery) {
         const query = await callbackQuery.data;
 
-        if (query === "theme_light") await this.sendText("U have light theme"); // light theme
-        else if (query === "theme_dark") await this.sendText("U have dark theme"); // dark theme
+        if (query === "theme_light") await this.sendText("У вас светлая тема"); // light theme
+        else if (query === "theme_dark") await this.sendText("У вас темная тема"); // dark theme
     }
 }
 
@@ -144,6 +240,8 @@ bot.onCommand(/\/app/, bot.html.bind(bot)); // demonstrate the app
 bot.onCommand(/\/gpt/, bot.gpt.bind(bot)); //gpt
 bot.onCommand(/\/date/, bot.date.bind(bot)); //date
 bot.onCommand(/\/message/, bot.message.bind(bot)); //date
+bot.onCommand(/\/account/, bot.profile.bind(bot)); //profile
+bot.onCommand(/\/opener/, bot.opener.bind(bot)); //opener
 
 bot.onTextMessage(bot.hello.bind(bot)); // hello text
 
